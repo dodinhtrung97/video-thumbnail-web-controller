@@ -51,14 +51,25 @@ def add_all():
 
 @app.route("/list", methods=['GET'])
 def list():
-    gif_dir = os.getenv('GIF_DIRECTORY','/bin/temp/')
-    bucket_name = request.args.get('bucketName')
+    src_host = os.getenv('STORAGE_HOST','localhost')
+    src_bucket_name = request.args.get('bucket')
 
-    gif_bucket = gif_dir + bucketName
-    result = { "gifList": glob.glob(gif_bucket + "*.gif") }
-    response = jsonify(result)
+    get_all_object_request_url = "http://" + src_host + ":8080" + '/' + src_bucket_name + "?list"
+    all_objects = requests.get(get_all_object_request_url)
 
-    return response
+    all_gifs = []
+    for object in all_objects.get('objects'):
+    	file_name = object.get('name')
+    	if file_name.rsplit(',',1)[1] == 'gif':
+    		all_gifs.append(object)
+
+    response = {
+    	"created" : all_objects.get('created'),
+    	"modified" : all_objects.get('modified'),
+    	"name" : all_objects.get('name'),
+    	"objects" : all_gifs
+    }
+    return jsonify(response)
 
 
 def queue_job(message):
