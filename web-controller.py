@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import os
 import pika
 import json
@@ -56,7 +56,7 @@ def list():
 
     gif_bucket = gif_dir + bucketName
     result = { "gifList": glob.glob(gif_bucket + "*.gif") }
-    response = json.dumps(result)
+    response = jsonify(result)
 
     return response
 
